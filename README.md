@@ -4,9 +4,23 @@
 
 **图片版权归 BushiRoad BanGDream Project 所有，请勿商用。** 本项目仅供个人学习与非商业使用，详见 [版权声明](COPYRIGHT.md) 和 [使用条款](LICENSE)。
 
+## 实际运行
+
+常显时陪你专注，点击时间卡片即可向下展开控制。两种计时模式，都把投入记在对应任务里。
+
+| 常显倒计时 · 深色白字 | 展开正计时 · 浅色黑字 |
+| :---: | :---: |
+| <img src="docs/screenshots/compact-dark.jpg" alt="GanSo 实际运行：上方任务名称、数字倒计时和进度条，下方角色常显" width="350"> | <img src="docs/screenshots/stopwatch-light.jpg" alt="GanSo 实际运行：浅色正计时、展开控制面板、随机休息提示和当前形象名字" width="350"> |
+
+**每一分投入，都留在任务里。** 自拟任务、导入清单，正计时和倒计时共用累计专注记录。
+
+<p align="center"><img src="docs/screenshots/tasks-light.jpg" alt="GanSo 实际任务清单：演示阅读任务已累计专注 0h05min" width="558"></p>
+
+以上为 Windows 上的实际运行截图，使用演示任务；面板会随深浅模式和桌面背景呈现不同效果。
+
 ## 下载与运行
 
-1. 在 [Releases](https://github.com/Create4220/GanSo/releases/latest) 下载 `GanSo-v1.2.1-windows-x64.zip`。
+1. 在 [Releases](https://github.com/Create4220/GanSo/releases/latest) 下载 `GanSo-v1.2.2-windows-x64.zip`。
 2. 完整解压到可写文件夹，双击 `GanSo.exe`。请保留旁边的 `assets` 文件夹。
 
 适用于 Windows 10 / 11，需要 .NET Framework 4.8。支持的 Windows 11 版本使用系统 Desktop Acrylic 玻璃背景；其他环境使用磨砂面板。运行便携包不需要 Python 或 Node.js。
@@ -19,6 +33,8 @@
 - **角色陪伴**：60 张透明角色图，启动随机，手动换图；保留名字字母、星星与白色爆炸框。
 - **玻璃面板**：上方时间块、下方人物，单列紧凑布局。浅色黑字、深色白字，可跟随系统。支持拖动、置顶、最小化和托盘恢复。
 - **独立运行**：关闭 Codex 后仍可使用，最小化继续计时，退出后暂停，下次可继续。
+
+v1.2.2 修复了 15 张形象的服装及小熊白色区域被误透明的问题，仅恢复透明度，保留原图颜色；已逐张复核确认。
 
 ### 常显与展开
 
@@ -75,12 +91,14 @@ GanSo 不读取 Codex 聊天标题、正文或历史记录，仅接收显式调�
 ```powershell
 .\build.ps1
 .\GanSo.Tests.exe
-.\package.ps1 -Version '1.2.1'
+.\package.ps1 -Version '1.2.2'
 ```
 
 程序使用 WPF / C# 与 .NET Framework 4.8，无运行时第三方包，构建不需要 Python。仓库包含运行所需的透明图片与音频。
 
 `tools/cutouts.py` 是可选图片处理工具，需要 `tools/requirements.txt` 中的依赖。JPEG 原图不随仓库分发；如需重新处理，将自己持有的原图放入 `assets/images`，原文件不会被覆盖。
+
+`tools/cutout-protection.json` 保存人工核对过的白色服装与小熊区域，重新抠图时自动保护这些区域。`tools/restore_cutout_colors.py` 可预览透明度修补，添加 `--apply` 才替换透明 PNG；原图颜色与其他形象保持不变。
 
 `package.ps1` 按明确清单生成便携包，不包含 `data`、日志、测试结果或开发缓存。
 

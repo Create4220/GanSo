@@ -1,4 +1,4 @@
-﻿param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '1.2.1')
+﻿param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '1.2.2')
 $ErrorActionPreference = 'Stop'
 $projectRoot = $PSScriptRoot
 $dist = Join-Path $projectRoot 'dist'
@@ -15,6 +15,7 @@ New-Item -ItemType Directory -Force -Path (Join-Path $portable 'assets'),(Join-P
 foreach ($folder in @('cutouts','sounds')) { Copy-Item -LiteralPath (Join-Path $projectRoot ('assets\' + $folder)) -Destination (Join-Path $portable 'assets') -Recurse }
 Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\ganso.ico') -Destination (Join-Path $portable 'assets')
 Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\random-cues-video.md') -Destination (Join-Path $portable 'docs')
+Copy-Item -LiteralPath (Join-Path $projectRoot 'docs\screenshots') -Destination (Join-Path $portable 'docs') -Recurse
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::CreateFromDirectory($staging,$archivePath,[System.IO.Compression.CompressionLevel]::Optimal,$false)
 $hash = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash.ToLowerInvariant()

@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'deps'))
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+from restore_cutout_colors import protection_mask
 
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT/'assets'/'images'
@@ -54,6 +55,9 @@ def extract(file):
     # Recover the narrow white sticker rim that touches the white outer paper.
     expanded=cv2.dilate(mask,np.ones((5,5),np.uint8))
     mask=np.maximum(mask,expanded & white.astype(np.uint8))
+    # Reviewed open garment outlines (and Michelle's white muzzle) need explicit
+    # protection: exterior flood-fill alone cannot distinguish them from paper.
+    mask=np.maximum(mask,(protection_mask(int(file.name[:2]),(w,h))>0).astype(np.uint8))
     rgba=np.dstack((rgb,mask*255))
     result=Image.fromarray(rgba)
     result.save(OUT/(file.stem+'.png'))
