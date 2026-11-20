@@ -6,7 +6,7 @@
 
 ## 下载与运行
 
-1. 在 [Releases](https://github.com/Create4220/GanSo/releases/latest) 下载 `GanSo-v1.2.0-windows-x64.zip`。
+1. 在 [Releases](https://github.com/Create4220/GanSo/releases/latest) 下载 `GanSo-v1.2.1-windows-x64.zip`。
 2. 完整解压到可写文件夹，双击 `GanSo.exe`。请保留旁边的 `assets` 文件夹。
 
 适用于 Windows 10 / 11，需要 .NET Framework 4.8。支持的 Windows 11 版本使用系统 Desktop Acrylic 玻璃背景；其他环境使用磨砂面板。运行便携包不需要 Python 或 Node.js。
@@ -26,7 +26,7 @@
 
 单击常显区，其他控件从时间块下方向下展开，重叠区域遮挡人物，不把人物挤走。再次单击收起，恢复完整人物；时间块位置始终不变。
 
-展开界面的底部显示当前形象名字，换图后同步更新。“全员”类名字与原图字母一致；主唱类对应关系待补充。
+展开界面的底部显示当前形象名字，换图后同步更新。主唱十人按提供的名单对应，全员类按原图字母核对；统一使用首字母大写，其余字母小写，保留名字中的长音符号和 `Chu²` 的上标。
 
 按住人物或常显区都可以拖动整个伙伴。超过拖动阈值后按拖动处理，不会误展开。点击人物只显示短暂的按压变暗效果，不打开控制区；松开、失去鼠标捕获或窗口失去激活后恢复原样，不修改原图颜色。
 
@@ -75,7 +75,7 @@ GanSo 不读取 Codex 聊天标题、正文或历史记录，仅接收显式调�
 ```powershell
 .\build.ps1
 .\GanSo.Tests.exe
-.\package.ps1 -Version '1.2.0'
+.\package.ps1 -Version '1.2.1'
 ```
 
 程序使用 WPF / C# 与 .NET Framework 4.8，无运行时第三方包，构建不需要 Python。仓库包含运行所需的透明图片与音频。

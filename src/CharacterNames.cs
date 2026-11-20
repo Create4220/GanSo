@@ -3,18 +3,19 @@ using System.IO;
 
 namespace GanSo {
  public static class CharacterNames {
-  // Match the names printed on the full-cast artwork, in source-image order 11–60.
+  // Vocalist order supplied by the user; full-cast spelling checked against artwork.
+  static readonly string[] Vocalists={"Kasumi","Ran","Aya","Yukina","Kokoro","Mashiro","Layer","Tomori","Uika","Arale"};
   static readonly string[] FullCast={
-   "KASUMI","ARISA","RIMI","SAYA","TAE","RAN","MOCA","HIMARI","TOMOE","TSUGUMI",
-   "TOMORI","ANON","RANA","SOYO","TAKI","KOKORO","KAORU","HAGUMI","KANON","MICHELLE",
-   "YUKINA","SAYO","LISA","AKO","RINKO","MASHIRO","TOKO","NANAMI","TSUKUSHI","RUI",
-   "AYA","HINA","CHISATO","MAYA","EVE","LAYER","LOCK","MASKING","PAREO","CHU²",
-   "UIKA","MUTSUMI","UMIRI","NYAMU","SAKIKO","ARALE","NONOKA","RITSU","MIYAKO","YUNO"
+   "Kasumi","Arisa","Rimi","Sāya","Tae","Ran","Moca","Himari","Tomoe","Tsugumi",
+   "Tomori","Anon","Rāna","Soyo","Taki","Kokoro","Kaoru","Hagumi","Kanon","Michelle",
+   "Yukina","Sayo","Lisa","Ako","Rinko","Mashiro","Tōko","Nanami","Tsukushi","Rui",
+   "Aya","Hina","Chisato","Maya","Eve","Layer","Lock","Masking","Pareo","Chu²",
+   "Uika","Mutsumi","Umiri","Nyamu","Sakiko","Arale","Nonoka","Ritsu","Miyako","Yuno"
   };
   public static string FromPath(string path){
    string file=Path.GetFileNameWithoutExtension(path??"");int index;
    if(file.Length<2||!int.TryParse(file.Substring(0,2),out index))return "";
-   return index>=11&&index<=60?FullCast[index-11]:"";
+   return index>=1&&index<=10?Vocalists[index-1]:index>=11&&index<=60?FullCast[index-11]:"";
   }
  }
 }

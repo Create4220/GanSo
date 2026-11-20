@@ -34,10 +34,13 @@ namespace GanSo {
     long removed=0;
     foreach(string image in images){var bitmap=Artwork.Load(image);var a=new FormatConvertedBitmap(bitmap,PixelFormats.Bgra32,null,0);int stride=a.PixelWidth*4;byte[] bytes=new byte[stride*a.PixelHeight];a.CopyPixels(bytes,stride,0);long transparent=0;for(int i=3;i<bytes.Length;i+=4)if(bytes[i]==0)transparent++;if(transparent<a.PixelWidth*a.PixelHeight*.08)throw new Exception("Outer background not removed: "+image);if(bytes[((int)(a.PixelHeight*.55)*a.PixelWidth+(int)(a.PixelWidth*.51))*4+3]<250)throw new Exception("Central face not protected: "+image);removed+=transparent;}
     Check(removed>0,"all cutouts load with transparent backgrounds and protected faces");
-    Check(CharacterNames.FromPath("11_全员_01.png")=="KASUMI"&&CharacterNames.FromPath("60_全员_50.png")=="YUNO","full cast naming covers first and last character");
-    Check(CharacterNames.FromPath("53_全员_43.png")=="UMIRI"&&CharacterNames.FromPath("50_全员_40.png")=="CHU²","image names match character lettering");
+    Check(CharacterNames.FromPath("11_全员_01.png")=="Kasumi"&&CharacterNames.FromPath("60_全员_50.png")=="Yuno","full cast naming covers first and last character");
+    Check(CharacterNames.FromPath("53_全员_43.png")=="Umiri"&&CharacterNames.FromPath("50_全员_40.png")=="Chu²","image names match character lettering");
     Check(Directory.GetFiles(imageDir,"*.png").Where(p=>int.Parse(Path.GetFileName(p).Substring(0,2))>=11).All(p=>CharacterNames.FromPath(p).Length>0),"all 50 full-cast images have a character name");
-    Check(CharacterNames.FromPath("01_主唱组_01.png")==""&&CharacterNames.FromPath("10_主唱组_10.png")=="","vocalist names remain pending user supplied mapping");
+    string[] expectedVocalists={"Kasumi","Ran","Aya","Yukina","Kokoro","Mashiro","Layer","Tomori","Uika","Arale"};Check(Enumerable.Range(1,10).All(n=>CharacterNames.FromPath(n.ToString("00")+"_主唱组.png")==expectedVocalists[n-1]),"all ten vocalist names match user supplied order");
+    Check(CharacterNames.FromPath("33_全员_23.png")=="Lisa"&&CharacterNames.FromPath("46_全员_36.png")=="Layer"&&CharacterNames.FromPath("47_全员_37.png")=="Lock"&&CharacterNames.FromPath("51_全员_41.png")=="Uika","uppercase I and L resolved correctly in character spelling");
+    Check(Directory.GetFiles(imageDir,"*.png").Select(CharacterNames.FromPath).All(n=>n.Length>0&&char.IsUpper(n[0])&&n.Substring(1)==n.Substring(1).ToLowerInvariant()),"all 60 names use initial capital and lowercase remainder");
+    Check(CharacterNames.FromPath("14_全员_04.png")=="Sāya"&&CharacterNames.FromPath("23_全员_13.png")=="Rāna"&&CharacterNames.FromPath("37_全员_27.png")=="Tōko","name accents from original lettering retained");
     using(var stream=typeof(MainWindow).Assembly.GetManifestResourceStream("GanSo.Main.xaml")){
      var window=(System.Windows.Window)System.Windows.Markup.XamlReader.Load(stream);window.Measure(new System.Windows.Size(440,600));window.Arrange(new System.Windows.Rect(0,0,440,600));window.UpdateLayout();
      foreach(string name in new[]{"ModeDown","ModeUp"}){var button=(System.Windows.Controls.Button)window.FindName(name);Check(button.Height>=button.FontSize*1.5+button.Padding.Top+button.Padding.Bottom+2,"mode label fits inside "+name);}
