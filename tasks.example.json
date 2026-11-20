@@ -1,0 +1,7 @@
+{
+  "tasks": [
+    { "name": "阅读与整理笔记", "minutes": 25 },
+    { "name": "完成今天的报告", "minutes": 45 },
+    { "name": "起身休息", "minutes": 5 }
+  ]
+}
