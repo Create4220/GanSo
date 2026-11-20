@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace GanSo {
  public sealed class DragGesture {
@@ -16,12 +17,14 @@ namespace GanSo {
  }
  public sealed class CompanionInteraction {
   readonly Window view;readonly Action changed;
-  readonly Button summary,character;
+  readonly Button summary,character; readonly FrameworkElement panel;
   readonly DragGesture summaryDrag,characterDrag;
   public bool Expanded {get;private set;}
   public CompanionInteraction(Window window,Action onLayoutChanged){
    view=window;changed=onLayoutChanged;
    summary=(Button)view.FindName("CompactToggle");character=(Button)view.FindName("CharacterButton");
+   panel=(FrameworkElement)view.FindName("GlassPanel");
+   panel.SizeChanged+=delegate{UpdateOcclusion();};character.SizeChanged+=delegate{UpdateOcclusion();};
    summaryDrag=AttachDrag(summary);characterDrag=AttachDrag(character);
    summary.Click+=delegate(object sender,RoutedEventArgs e){if(!summaryDrag.WasDragged)SetExpanded(!Expanded);e.Handled=true;};
    character.Click+=delegate(object sender,RoutedEventArgs e){e.Handled=true;};
@@ -33,7 +36,15 @@ namespace GanSo {
    Expanded=expanded;((FrameworkElement)view.FindName("ControlsPanel")).Visibility=expanded?Visibility.Visible:Visibility.Collapsed;
    ((TextBlock)view.FindName("Disclosure")).Text=expanded?"⌃":"⌄";
    summary.ToolTip=expanded?"点击收起控件；按住拖动位置":"点击展开控件；按住拖动位置";
-   view.UpdateLayout();if(changed!=null)changed();
+   view.UpdateLayout();UpdateOcclusion();if(changed!=null)changed();
+  }
+  void UpdateOcclusion(){
+   if(character.ActualWidth<=0||character.ActualHeight<=0||panel.ActualWidth<=0)return;
+   var bounds=new Rect(0,0,character.ActualWidth,character.ActualHeight);
+   var cover=new Rect(panel.TranslatePoint(new Point(),character),new Size(panel.ActualWidth,panel.ActualHeight));
+   if(!bounds.IntersectsWith(cover)){character.Clip=null;return;}
+   var clip=new CombinedGeometry(GeometryCombineMode.Exclude,new RectangleGeometry(bounds),new RectangleGeometry(cover,30,30));
+   if(clip.CanFreeze)clip.Freeze();character.Clip=clip;
   }
   static void Release(Button button){if(Mouse.Captured==button)button.ReleaseMouseCapture();}
   DragGesture AttachDrag(Button button){

@@ -34,8 +34,12 @@ namespace GanSo {
     long removed=0;
     foreach(string image in images){var bitmap=Artwork.Load(image);var a=new FormatConvertedBitmap(bitmap,PixelFormats.Bgra32,null,0);int stride=a.PixelWidth*4;byte[] bytes=new byte[stride*a.PixelHeight];a.CopyPixels(bytes,stride,0);long transparent=0;for(int i=3;i<bytes.Length;i+=4)if(bytes[i]==0)transparent++;if(transparent<a.PixelWidth*a.PixelHeight*.08)throw new Exception("Outer background not removed: "+image);if(bytes[((int)(a.PixelHeight*.55)*a.PixelWidth+(int)(a.PixelWidth*.51))*4+3]<250)throw new Exception("Central face not protected: "+image);removed+=transparent;}
     Check(removed>0,"all cutouts load with transparent backgrounds and protected faces");
+    Check(CharacterNames.FromPath("11_全员_01.png")=="KASUMI"&&CharacterNames.FromPath("60_全员_50.png")=="YUNO","full cast naming covers first and last character");
+    Check(CharacterNames.FromPath("53_全员_43.png")=="UMIRI"&&CharacterNames.FromPath("50_全员_40.png")=="CHU²","image names match character lettering");
+    Check(Directory.GetFiles(imageDir,"*.png").Where(p=>int.Parse(Path.GetFileName(p).Substring(0,2))>=11).All(p=>CharacterNames.FromPath(p).Length>0),"all 50 full-cast images have a character name");
+    Check(CharacterNames.FromPath("01_主唱组_01.png")==""&&CharacterNames.FromPath("10_主唱组_10.png")=="","vocalist names remain pending user supplied mapping");
     using(var stream=typeof(MainWindow).Assembly.GetManifestResourceStream("GanSo.Main.xaml")){
-     var window=(System.Windows.Window)System.Windows.Markup.XamlReader.Load(stream);window.Measure(new System.Windows.Size(820,560));window.Arrange(new System.Windows.Rect(0,0,820,560));window.UpdateLayout();
+     var window=(System.Windows.Window)System.Windows.Markup.XamlReader.Load(stream);window.Measure(new System.Windows.Size(440,600));window.Arrange(new System.Windows.Rect(0,0,440,600));window.UpdateLayout();
      foreach(string name in new[]{"ModeDown","ModeUp"}){var button=(System.Windows.Controls.Button)window.FindName(name);Check(button.Height>=button.FontSize*1.5+button.Padding.Top+button.Padding.Bottom+2,"mode label fits inside "+name);}
      Check(window.FindName("ImageCaption")==null,"image filename and count removed from interface");window.Close();
     }
@@ -55,15 +59,24 @@ namespace GanSo {
   static void CheckCompanionInteraction(){
    using(var stream=typeof(MainWindow).Assembly.GetManifestResourceStream("GanSo.Main.xaml")){
     var window=(System.Windows.Window)System.Windows.Markup.XamlReader.Load(stream);
-    var surface=(System.Windows.FrameworkElement)window.Content;Action layout=delegate{surface.Measure(new System.Windows.Size(820,560));surface.Arrange(new System.Windows.Rect(0,0,820,560));surface.UpdateLayout();};
+    var surface=(System.Windows.FrameworkElement)window.Content;Action layout=delegate{surface.Measure(new System.Windows.Size(440,600));surface.Arrange(new System.Windows.Rect(0,0,440,600));surface.UpdateLayout();};
     var interaction=new CompanionInteraction(window,null);layout();
     var controls=(System.Windows.FrameworkElement)window.FindName("ControlsPanel");var header=(System.Windows.Controls.Button)window.FindName("CompactToggle");var character=(System.Windows.Controls.Button)window.FindName("CharacterButton");
+    var caption=(System.Windows.Controls.TextBlock)window.FindName("CharacterCaption");Check(object.ReferenceEquals(caption.Parent,controls),"character name appears only at bottom of expanded controls");
     Check(!interaction.Expanded&&controls.Visibility==System.Windows.Visibility.Collapsed,"controls collapsed on startup");
     Check(((System.Windows.FrameworkElement)window.FindName("TaskDisplay")).ActualHeight>0&&((System.Windows.FrameworkElement)window.FindName("Clock")).ActualHeight>0&&((System.Windows.FrameworkElement)window.FindName("Progress")).ActualHeight>0,"task, clock and progress remain visible");
+    var panel=(System.Windows.FrameworkElement)window.FindName("GlassPanel");var brand=(System.Windows.Controls.TextBlock)window.FindName("BrandTitle");var task=(System.Windows.FrameworkElement)window.FindName("TaskDisplay");var personAnchor=character.TranslatePoint(new System.Windows.Point(),surface);
+    Check(window.Width<500,"single column companion uses less desktop width");
+    Check(brand.Text=="GanSo"&&brand.TranslatePoint(new System.Windows.Point(),surface).X<task.TranslatePoint(new System.Windows.Point(),surface).X,"formal GanSo title precedes task name");
+    Check(panel.TranslatePoint(new System.Windows.Point(0,panel.ActualHeight),surface).Y<=personAnchor.Y,"compact time card stays above character");
     character.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));Check(!interaction.Expanded,"character click does not open controls");
     var anchor=header.TranslatePoint(new System.Windows.Point(),surface);header.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));layout();Check(interaction.Expanded&&controls.Visibility==System.Windows.Visibility.Visible,"summary click opens controls");Check(Math.Abs(header.TranslatePoint(new System.Windows.Point(),surface).Y-anchor.Y)<.01,"summary stays in place when controls expand");
-    Check(controls.TranslatePoint(new System.Windows.Point(0,controls.ActualHeight),surface).Y<=560,"expanded controls fit window without clipping");
-    character.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));Check(interaction.Expanded,"character click does not close controls");header.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));Check(!interaction.Expanded,"second summary click closes controls");
+    Check(controls.TranslatePoint(new System.Windows.Point(0,controls.ActualHeight),surface).Y<=600,"expanded controls fit window without clipping");
+    Check(character.TranslatePoint(new System.Windows.Point(),surface)==personAnchor,"expanding downward does not move character");
+    var cover=new System.Windows.Rect(panel.TranslatePoint(new System.Windows.Point(),character),new System.Windows.Size(panel.ActualWidth,panel.ActualHeight));var overlap=System.Windows.Rect.Intersect(new System.Windows.Rect(0,0,character.ActualWidth,character.ActualHeight),cover);
+    Check(!overlap.IsEmpty&&character.Clip!=null,"expanded card overlays character instead of pushing it down");
+    Check(!character.Clip.FillContains(new System.Windows.Point(overlap.X+overlap.Width/2,overlap.Y+overlap.Height/2)),"overlapping character pixels hidden behind expanded glass");
+    character.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));Check(interaction.Expanded,"character click does not close controls");header.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));layout();Check(!interaction.Expanded,"second summary click closes controls");Check(character.Clip==null,"collapsing restores complete character silhouette");
     character.ApplyTemplate();var shade=(System.Windows.Shapes.Rectangle)character.Template.FindName("PressShade",character);var key=(System.Windows.DependencyPropertyKey)typeof(System.Windows.Controls.Primitives.ButtonBase).GetField("IsPressedPropertyKey",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic).GetValue(null);
     for(int i=0;i<200;i++){character.SetValue(key,true);if(shade.Opacity!=.18)throw new Exception("Pressed shade missing");character.SetValue(key,false);if(shade.Opacity!=0)throw new Exception("Brightness drift after release");}Check(shade.Opacity==0,"200 press/release cycles restore exact original brightness");
     character.SetValue(key,true);character.RaiseEvent(new System.Windows.Input.MouseEventArgs(System.Windows.Input.Mouse.PrimaryDevice,0){RoutedEvent=System.Windows.Input.Mouse.LostMouseCaptureEvent});Check(shade.Opacity==0,"lost mouse capture restores unpressed brightness");

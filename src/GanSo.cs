@@ -255,7 +255,7 @@ namespace GanSo {
    if (images == null || images.Length == 0) { status.Text = "未找到角色图片"; return; }
    var choices = images.Where(p => p != imagePath).ToArray(); if (choices.Length == 0) choices = images;
    imagePath = choices[random.Next(choices.Length)];
-   try { character.Source = Artwork.Load(imagePath); Find<Button>("CharacterButton").Tag=character.Source; } catch (Exception ex) { status.Text = "这张图片无法读取："+ex.Message; }
+   try { character.Source = Artwork.Load(imagePath); Find<Button>("CharacterButton").Tag=character.Source; string name=CharacterNames.FromPath(imagePath);var label=Find<TextBlock>("CharacterCaption");label.Text=name.Length>0?"当前形象："+name:"";label.Visibility=name.Length>0?Visibility.Visible:Visibility.Collapsed; } catch (Exception ex) { status.Text = "这张图片无法读取："+ex.Message; }
   }
   string SoundPath() { return Path.IsPathRooted(settings.sound) ? settings.sound : Path.Combine(Data.Root, "assets", "sounds", settings.sound); }
   void PlaySound() {

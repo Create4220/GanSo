@@ -1,4 +1,4 @@
-﻿param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '1.1.0')
+﻿param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '1.2.0')
 $ErrorActionPreference = 'Stop'
 $projectRoot = $PSScriptRoot
 $dist = Join-Path $projectRoot 'dist'
