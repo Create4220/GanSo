@@ -141,7 +141,7 @@ namespace GanSo {
   ComboBox taskName; TextBox minutes, seconds; TextBlock clock, status, today, totalFocus;
   Button start, pin; ProgressBar progress; Image character;
   string imagePath; string[] images; Random random = new Random(); CueAudio audio; RandomCueSchedule cueSchedule=new RandomCueSchedule(); double microRestUntil; bool previewPlaying;
-  Forms.NotifyIcon tray; bool changing, closing, timerWasStarted; int heartbeat; double accounted; string activeTask; NativeGlass glass;
+  Forms.NotifyIcon tray; bool changing, closing, timerWasStarted; int heartbeat; double accounted; string activeTask; NativeGlass glass; CompanionInteraction interaction;
   public MainWindow() {
    settings = Data.Load(); timer = new Countdown(1500); timer.Restore(settings.duration, settings.remaining); timer.CountUp=settings.countUp; timer.RestoreUp(settings.upElapsed); accounted=timer.Elapsed; timerWasStarted = timer.CountUp ? timer.UpElapsed > 0 : timer.Remaining > 0 && timer.Remaining < timer.Duration;
    using (var stream = typeof(MainWindow).Assembly.GetManifestResourceStream("GanSo.Main.xaml")) view = (Window)XamlReader.Load(stream);
@@ -151,6 +151,7 @@ namespace GanSo {
    var randomToggle=Find<CheckBox>("RandomCueToggle");randomToggle.IsChecked=settings.randomCues;UpdateCueLabel();
    randomToggle.Click+=delegate{settings.randomCues=randomToggle.IsChecked==true;ResetCues();status.Text=settings.randomCues?"随机休息提示已开启":"随机休息提示已关闭";Save();};
    RefreshTasks(); taskName.Text = settings.task;
+   interaction=new CompanionInteraction(view,delegate{if(glass!=null)glass.Sync();});
    SetInputs(timer.Duration); if(timerWasStarted) status.Text = "已恢复上次进度，点击继续专注"; view.Topmost = settings.pinned; UpdatePin();
    if (settings.left >= 0 && settings.top >= 0 && settings.left < SystemParameters.VirtualScreenWidth - 100 && settings.top < SystemParameters.VirtualScreenHeight - 100) { view.WindowStartupLocation = WindowStartupLocation.Manual; view.Left = settings.left; view.Top = settings.top; }
    Find<Grid>("DragArea").MouseLeftButtonDown += delegate(object s, MouseButtonEventArgs e) { if (!(e.OriginalSource is TextBlock) && e.OriginalSource != s) return; try { view.DragMove(); } catch (InvalidOperationException) {} };
@@ -204,7 +205,7 @@ namespace GanSo {
    StopSound(); timerWasStarted = false; ResetToday(); settings.completedToday++; status.Text = "完成了！休息一下吧";
    microRestUntil=0;
    previewPlaying=false;
-   if (settings.soundEnabled) audio.Play(CuePolicy.CompletionPath(settings.randomCues,SoundPath(),Path.Combine(Data.Root,"assets","sounds","codex-notification.wav")),CuePolicy.CompletionCount(settings.randomCues));
+   if (settings.soundEnabled) audio.Play(CuePolicy.CompletionPath(Path.Combine(Data.Root,"assets","sounds","codex-notification.wav")),CuePolicy.CompletionCount());
    tray.BalloonTipTitle = "GanSo · 专注完成"; tray.BalloonTipText = (taskName.Text.Length == 0 ? "本次专注" : taskName.Text) + " 的倒计时已结束。"; tray.ShowBalloonTip(5000);
    view.Title = "✓ 专注完成 · GanSo"; Save();
   }
@@ -222,7 +223,8 @@ namespace GanSo {
   void ResetToday() { string date = DateTime.Now.ToString("yyyy-MM-dd"); if (settings.completedDate != date) { settings.completedDate = date; settings.completedToday = 0; } }
   void Update() {
    clock.Text = timer.CountUp ? Countdown.FormatUp(timer.UpElapsed) : Countdown.Format(timer.Remaining); clock.FontSize=clock.Text.Length>5?52:68; progress.Value = timer.CountUp ? 0 : timer.Duration <= 0 ? 0 : 1 - timer.Remaining / timer.Duration;
-   progress.Visibility=timer.CountUp?Visibility.Hidden:Visibility.Visible;
+   progress.Visibility=Visibility.Visible;progress.IsIndeterminate=timer.CountUp&&timer.Running;progress.ToolTip=timer.CountUp?"正计时：无固定目标时长":"本次倒计时进度";
+   Find<TextBlock>("TaskDisplay").Text=string.IsNullOrWhiteSpace(taskName.Text)?"自由专注":taskName.Text;
    Find<StackPanel>("DurationInputs").Visibility=timer.CountUp?Visibility.Collapsed:Visibility.Visible;
    Find<Button>("Finish").Visibility=timer.CountUp?Visibility.Visible:Visibility.Collapsed;
    Find<Button>("Finish").IsEnabled=timerWasStarted;
@@ -253,7 +255,7 @@ namespace GanSo {
    if (images == null || images.Length == 0) { status.Text = "未找到角色图片"; return; }
    var choices = images.Where(p => p != imagePath).ToArray(); if (choices.Length == 0) choices = images;
    imagePath = choices[random.Next(choices.Length)];
-   try { character.Source = Artwork.Load(imagePath); } catch (Exception ex) { status.Text = "这张图片无法读取："+ex.Message; }
+   try { character.Source = Artwork.Load(imagePath); Find<Button>("CharacterButton").Tag=character.Source; } catch (Exception ex) { status.Text = "这张图片无法读取："+ex.Message; }
   }
   string SoundPath() { return Path.IsPathRooted(settings.sound) ? settings.sound : Path.Combine(Data.Root, "assets", "sounds", settings.sound); }
   void PlaySound() {
@@ -290,7 +292,7 @@ namespace GanSo {
    var combo = parent as ComboBox;
    if (combo != null) {
     combo.Background = Brushes.Transparent;
-    var editable = combo.Template.FindName("PART_EditableTextBox", combo) as TextBox; if (editable != null) { editable.Foreground = fg; editable.Background = Brushes.Transparent; editable.CaretBrush = fg; }
+    combo.ApplyTemplate();var editable = combo.Template.FindName("PART_EditableTextBox", combo) as TextBox; if (editable != null) { editable.Foreground = fg; editable.Background = Brushes.Transparent; editable.CaretBrush = fg; }
     foreach (var item in combo.Items) { var container = combo.ItemContainerGenerator.ContainerFromItem(item) as ComboBoxItem; if (container != null) { container.Background = dark ? new SolidColorBrush(Color.FromRgb(40,40,44)) : Brushes.White; container.Foreground = fg; } }
    }
   }
@@ -330,7 +332,7 @@ namespace GanSo {
    var intervals=new WrapPanel();var minInput=new TextBox{Text=settings.randomMinSeconds.ToString(),Width=65,Padding=new Thickness(6),Margin=new Thickness(3)};var maxInput=new TextBox{Text=settings.randomMaxSeconds.ToString(),Width=65,Padding=new Thickness(6),Margin=new Thickness(3)};
    intervals.Children.Add(new TextBlock{Text="最短",VerticalAlignment=VerticalAlignment.Center});intervals.Children.Add(minInput);intervals.Children.Add(new TextBlock{Text="秒，最长",VerticalAlignment=VerticalAlignment.Center});intervals.Children.Add(maxInput);intervals.Children.Add(new TextBlock{Text="秒",VerticalAlignment=VerticalAlignment.Center});
    intervals.Children.Add(Btn("应用",delegate{Guard(delegate{int min,max;if(!int.TryParse(minInput.Text,out min)||!int.TryParse(maxInput.Text,out max))throw new ArgumentException("请输入整数秒数。");RandomCueSchedule.Validate(min,max);settings.randomMinSeconds=min;settings.randomMaxSeconds=max;ResetCues();UpdateCueLabel();Save();status.Text="随机提示间隔已更新";});}));panel.Children.Add(intervals);
-   panel.Children.Add(new TextBlock{Text="主界面勾选后生效，默认 180–300 秒。\n随机提示沿用上方所选声音，每次播放一次；\n完成时固定为 Codex 提示音三次。暂停时不响。",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,8,0,8)});
+   panel.Children.Add(new TextBlock{Text="主界面勾选后生效，默认 180–300 秒。\n随机提示沿用上方所选声音，每次播放一次；\n无论是否勾选，完成时均播放三次 Codex 提示音。",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,8,0,8)});
    panel.Children.Add(new TextBlock { Text = "窗口背景透明，可拖动顶部标题移动。\n置顶按钮可让伙伴一直陪在桌面上。\n关闭窗口会暂停；最小化后继续计时。\n任务与设置保存在程序旁的 data 文件夹。", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0,9,0,0) });
    dialog = Dialog("设置", 470, 630, panel);
    themes.SelectionChanged += delegate { settings.theme = themes.SelectedIndex == 1 ? "dark" : themes.SelectedIndex == 2 ? "light" : "auto"; ApplyTheme(); dialog.Background = Dark() ? new SolidColorBrush(Color.FromRgb(35,35,40)) : new SolidColorBrush(Color.FromRgb(250,249,253)); dialog.Foreground = enabled.Foreground = Dark() ? Brushes.White : Brushes.Black; Save(); };
@@ -369,7 +371,7 @@ namespace GanSo {
  public static class Program {
   [STAThread] public static int Main(string[] args) {
 #if TEST_RUNNER
-   return Tests.Run();
+   return args.Length>0&&args[0]=="--audio-smoke-test"?Tests.RunAudioSmoke():Tests.Run();
 #else
    try {
     bool queued = HandleArgs(args);

@@ -17,27 +17,42 @@
     </Grid>
    </ControlTemplate></Setter.Value></Setter>
   </Style>
+
+  <Style x:Key="SummaryStyle" TargetType="Button"><Setter Property="Margin" Value="0"/><Setter Property="Padding" Value="0"/><Setter Property="Cursor" Value="Hand"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="Transparent"><ContentPresenter/></Border></ControlTemplate></Setter.Value></Setter></Style>
+  <Style x:Key="CharacterStyle" TargetType="Button"><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Grid Background="Transparent"><ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/><Rectangle x:Name="PressShade" Fill="Black" Opacity="0" IsHitTestVisible="False"><Rectangle.OpacityMask><ImageBrush ImageSource="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" Stretch="Uniform"/></Rectangle.OpacityMask></Rectangle></Grid><ControlTemplate.Triggers><Trigger Property="IsPressed" Value="True"><Setter TargetName="PressShade" Property="Opacity" Value="0.18"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="PressShade" Property="Opacity" Value="0"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
  </Window.Resources>
- <Grid Margin="16" Background="Transparent">
+ <Grid Margin="16">
   <Grid.ColumnDefinitions><ColumnDefinition Width="0.9*"/><ColumnDefinition Width="1.1*"/></Grid.ColumnDefinitions>
-  <Image x:Name="Character" Stretch="Uniform" Margin="0,18,18,18" IsHitTestVisible="False"/>
-  <Border x:Name="GlassPanel" Grid.Column="1" CornerRadius="30" BorderThickness="1" Padding="23,17,23,17">
-   <Border.BorderBrush><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#F0FFFFFF" Offset="0"/><GradientStop Color="#35FFFFFF" Offset="0.48"/><GradientStop Color="#C0FFFFFF" Offset="1"/></LinearGradientBrush></Border.BorderBrush>
-   <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#40FFFFFF" Offset="0"/><GradientStop Color="#04FFFFFF" Offset="0.45"/><GradientStop Color="#30FFFFFF" Offset="1"/></LinearGradientBrush></Border.Background>
-   <Border.Effect><DropShadowEffect BlurRadius="22" ShadowDepth="5" Opacity="0.18" Color="#142026"/></Border.Effect>
-   <Grid><Grid.RowDefinitions><RowDefinition Height="32"/><RowDefinition Height="48"/><RowDefinition Height="58"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="50"/><RowDefinition Height="42"/><RowDefinition Height="28"/><RowDefinition Height="22"/></Grid.RowDefinitions>
-    <Grid x:Name="DragArea" Background="Transparent"><TextBlock Text="GanSo" FontFamily="Segoe UI" FontSize="21" FontWeight="SemiBold" VerticalAlignment="Center"/>
-     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="Pin" Content="置顶" FontSize="10" Padding="9,6"/><Button x:Name="Minimize" Content="—" Padding="10,6"/><Button x:Name="CloseButton" Content="×" Padding="10,6"/></StackPanel>
-    </Grid>
-    <Grid Grid.Row="1" Margin="0,3,0,3"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><Button x:Name="ModeDown" Content="倒计时" FontSize="13" Padding="12,5" Height="34" VerticalContentAlignment="Center"/><Button x:Name="ModeUp" Grid.Column="1" Content="正计时" FontSize="13" Padding="12,5" Height="34" VerticalContentAlignment="Center"/></Grid>
-    <Grid Grid.Row="2" Margin="0,6,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions><ComboBox x:Name="TaskName" IsEditable="True" IsTextSearchEnabled="False" FontSize="16" Height="40" MaxDropDownHeight="220" VerticalContentAlignment="Center" ToolTip="输入任务名称，或从清单选择"/><Button Grid.Column="1" x:Name="SaveTask" Content="＋" FontSize="20" Padding="4,2" Height="38" ToolTip="保存任务"/></Grid>
-    <StackPanel Grid.Row="3" VerticalAlignment="Center"><TextBlock x:Name="Clock" Text="25:00" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="Light" FontSize="68" HorizontalAlignment="Center"/><ProgressBar x:Name="Progress" Height="3" BorderThickness="0" Maximum="1" Margin="4,9,4,4"/><TextBlock x:Name="Status" Text="准备好了，就开始吧" HorizontalAlignment="Center" FontSize="11" Opacity="0.7" Margin="0,6"/><TextBlock x:Name="TotalFocus" Text="累计 0h00min" FontSize="11" HorizontalAlignment="Center" Opacity="0.65" Margin="0,2,0,7"/></StackPanel>
-    <StackPanel x:Name="DurationInputs" Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,3,0,8"><TextBox x:Name="Minutes" Text="25" Width="43" MaxLength="3" TextAlignment="Center"/><TextBlock Text=" 分 " VerticalAlignment="Center" FontSize="11"/><TextBox x:Name="Seconds" Text="00" Width="40" MaxLength="2" TextAlignment="Center"/><TextBlock Text=" 秒  " VerticalAlignment="Center" FontSize="11"/><Button x:Name="Preset5" Content="5′" Padding="9,8" FontSize="11"/><Button x:Name="Preset25" Content="25′" Padding="9,8" FontSize="11"/><Button x:Name="Preset45" Content="45′" Padding="9,8" FontSize="11"/></StackPanel>
-    <Grid Grid.Row="5"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="75"/><ColumnDefinition Width="65"/></Grid.ColumnDefinitions><Button x:Name="StartPause" Content="开始专注" FontSize="14" Padding="12,10"/><Button Grid.Column="1" x:Name="Finish" Content="结束" FontSize="12" Padding="8,10" ToolTip="结束本次正计时并保存专注时长"/><Button Grid.Column="2" x:Name="Reset" Content="重置" FontSize="12" Padding="7,10"/></Grid>
-    <UniformGrid Grid.Row="6" Columns="3" Margin="0,4,0,0"><Button x:Name="Shuffle" Content="↻ 换一张" FontSize="11" Padding="5,7"/><Button x:Name="Tasks" Content="任务清单" FontSize="11" Padding="5,7"/><Button x:Name="Settings" Content="设置" FontSize="11" Padding="5,7"/></UniformGrid>
-    <CheckBox Grid.Row="7" x:Name="RandomCueToggle" Content="随机休息提示（3–5分钟）" FontSize="11" Margin="6,4,0,2" VerticalContentAlignment="Center" ToolTip="专注中随机播放所选提示音一次，提醒闭眼放松10秒；计时继续。结束时播放三次Codex提示音。间隔可在设置中调整。"/><TextBlock Grid.Row="8" x:Name="Today" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Bottom" Opacity="0.6"/>
-   </Grid>
-  </Border>
-  <Border Grid.Column="1" Margin="2" CornerRadius="28" BorderThickness="1" IsHitTestVisible="False"><Border.BorderBrush><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#20FFFFFF" Offset="0"/><GradientStop Color="#02FFFFFF" Offset="0.38"/><GradientStop Color="#02FFFFFF" Offset="0.65"/><GradientStop Color="#60FFFFFF" Offset="1"/></LinearGradientBrush></Border.BorderBrush></Border>
+  <Button x:Name="CharacterButton" Style="{StaticResource CharacterStyle}" Height="400" Margin="0,12,18,0" VerticalAlignment="Top" ToolTip="按住拖动位置"><Image x:Name="Character" Stretch="Uniform"/></Button>
+  <Grid Grid.Column="1" VerticalAlignment="Top">
+   <Border x:Name="GlassPanel" CornerRadius="30" BorderThickness="1" Padding="20,14">
+    <Border.BorderBrush><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#F0FFFFFF" Offset="0"/><GradientStop Color="#35FFFFFF" Offset="0.48"/><GradientStop Color="#C0FFFFFF" Offset="1"/></LinearGradientBrush></Border.BorderBrush>
+    <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#40FFFFFF" Offset="0"/><GradientStop Color="#04FFFFFF" Offset="0.45"/><GradientStop Color="#30FFFFFF" Offset="1"/></LinearGradientBrush></Border.Background>
+    <Border.Effect><DropShadowEffect BlurRadius="22" ShadowDepth="5" Opacity="0.18" Color="#142026"/></Border.Effect>
+    <StackPanel>
+     <Button x:Name="CompactToggle" Style="{StaticResource SummaryStyle}" AutomationProperties.Name="展开或收起控制区">
+      <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <TextBlock x:Name="TaskDisplay" Text="自由专注" FontSize="16" TextTrimming="CharacterEllipsis" Margin="6,4,28,0"/>
+       <TextBlock x:Name="Disclosure" Text="⌄" FontSize="16" HorizontalAlignment="Right" Margin="0,0,6,0"/>
+       <TextBlock Grid.Row="1" x:Name="Clock" Text="25:00" FontFamily="Segoe UI Variable Display, Segoe UI" FontWeight="Light" FontSize="68" HorizontalAlignment="Center"/>
+       <ProgressBar Grid.Row="2" x:Name="Progress" Height="3" BorderThickness="0" Maximum="1" Margin="5,7,5,5"/>
+      </Grid>
+     </Button>
+     <StackPanel x:Name="ControlsPanel" Visibility="Collapsed">
+      <Grid x:Name="DragArea" Height="28" Margin="0,6,0,2" Background="Transparent"><TextBlock Text="GanSo" FontFamily="Segoe UI" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/><StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="Pin" Content="置顶" FontSize="10" Padding="9,4"/><Button x:Name="Minimize" Content="—" Padding="10,4"/><Button x:Name="CloseButton" Content="×" Padding="10,4"/></StackPanel></Grid>
+      <UniformGrid Columns="2" Height="40"><Button x:Name="ModeDown" Content="倒计时" FontSize="13" Height="34" Padding="12,5"/><Button x:Name="ModeUp" Content="正计时" FontSize="13" Height="34" Padding="12,5"/></UniformGrid>
+      <Grid Height="42" Margin="0,3,0,0"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions><ComboBox x:Name="TaskName" IsEditable="True" IsTextSearchEnabled="False" FontSize="15" Height="36" MaxDropDownHeight="220" VerticalContentAlignment="Center" ToolTip="输入任务名称，或从清单选择"/><Button Grid.Column="1" x:Name="SaveTask" Content="＋" FontSize="20" Height="36" Padding="4,1" ToolTip="保存任务"/></Grid>
+      <TextBlock x:Name="Status" Text="准备好了，就开始吧" HorizontalAlignment="Center" FontSize="10" Opacity="0.7" Margin="0,3,0,0"/>
+      <TextBlock x:Name="TotalFocus" Text="累计 0h00min" FontSize="10" HorizontalAlignment="Center" Opacity="0.65" Margin="0,2,0,3"/>
+      <StackPanel x:Name="DurationInputs" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,3,0,5"><TextBox x:Name="Minutes" Text="25" Width="43" MaxLength="3" TextAlignment="Center"/><TextBlock Text=" 分 " VerticalAlignment="Center" FontSize="11"/><TextBox x:Name="Seconds" Text="00" Width="40" MaxLength="2" TextAlignment="Center"/><TextBlock Text=" 秒  " VerticalAlignment="Center" FontSize="11"/><Button x:Name="Preset5" Content="5′" Padding="9,7" FontSize="11"/><Button x:Name="Preset25" Content="25′" Padding="9,7" FontSize="11"/><Button x:Name="Preset45" Content="45′" Padding="9,7" FontSize="11"/></StackPanel>
+      <Grid Height="44"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="75"/><ColumnDefinition Width="65"/></Grid.ColumnDefinitions><Button x:Name="StartPause" Content="开始专注" FontSize="14" Padding="12,8"/><Button Grid.Column="1" x:Name="Finish" Content="结束" FontSize="12" Padding="8,8"/><Button Grid.Column="2" x:Name="Reset" Content="重置" FontSize="12" Padding="7,8"/></Grid>
+      <UniformGrid Columns="3" Height="35"><Button x:Name="Shuffle" Content="↻ 换一张" FontSize="11" Padding="5,6"/><Button x:Name="Tasks" Content="任务清单" FontSize="11" Padding="5,6"/><Button x:Name="Settings" Content="设置" FontSize="11" Padding="5,6"/></UniformGrid>
+      <CheckBox x:Name="RandomCueToggle" Content="随机休息提示（3–5分钟）" FontSize="11" Margin="6,5,0,3" VerticalContentAlignment="Center" ToolTip="只控制过程中的随机提示；完成时固定播放三次Codex提示音。"/>
+      <TextBlock x:Name="Today" FontSize="10" HorizontalAlignment="Center" Opacity="0.6" Margin="0,4,0,0"/>
+     </StackPanel>
+    </StackPanel>
+   </Border>
+   <Border Margin="2" CornerRadius="28" BorderThickness="1" IsHitTestVisible="False"><Border.BorderBrush><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#20FFFFFF" Offset="0"/><GradientStop Color="#02FFFFFF" Offset="0.38"/><GradientStop Color="#02FFFFFF" Offset="0.65"/><GradientStop Color="#60FFFFFF" Offset="1"/></LinearGradientBrush></Border.BorderBrush></Border>
+  </Grid>
  </Grid>
 </Window>

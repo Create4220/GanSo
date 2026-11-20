@@ -17,8 +17,8 @@ namespace GanSo {
   public bool Advance(double activeSeconds){if(activeSeconds<=0||double.IsNaN(activeSeconds)||double.IsInfinity(activeSeconds))return false;Remaining-=activeSeconds;if(Remaining>0)return false;Draw();return true;}
  }
  public static class CuePolicy {
-  public static int CompletionCount(bool randomCues){return randomCues?3:1;}
-  public static string CompletionPath(bool randomCues,string selected,string codex){return randomCues?codex:selected;}
+  public static int CompletionCount(){return 3;}
+  public static string CompletionPath(string codex){return codex;}
  }
  // One serialized audio channel. Completion replaces any random cue/preview;
  // PlaySync waits for a full WAV before the next repetition, off the UI thread.
@@ -30,6 +30,7 @@ namespace GanSo {
   CancellationTokenSource cancellation;
   SoundPlayer current;
   bool disposed;
+  public event Action<int> SoundCompleted;
   public CueAudio(Action<string,CancellationToken> testPlayback=null,Action<Exception> onFailure=null){playback=testPlayback??PlayOne;failed=onFailure;}
   public Task Play(string path,int count){
    if(count<1||count>3)throw new ArgumentOutOfRangeException("count");
@@ -38,7 +39,7 @@ namespace GanSo {
    var token=request.Token;
    return Task.Factory.StartNew(delegate {
     serial.Wait();
-    try{for(int i=0;i<count;i++){token.ThrowIfCancellationRequested();playback(path,token);}}
+    try{for(int i=0;i<count;i++){token.ThrowIfCancellationRequested();playback(path,token);token.ThrowIfCancellationRequested();var completed=SoundCompleted;if(completed!=null)completed(i+1);}}
     catch(OperationCanceledException){}
     catch(Exception ex){if(!token.IsCancellationRequested&&failed!=null)failed(ex);}
     finally{lock(gate){if(object.ReferenceEquals(cancellation,request))cancellation=null;}request.Dispose();serial.Release();}

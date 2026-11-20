@@ -31,7 +31,7 @@ namespace GanSo {
     int corners=1;DwmSetWindowAttribute(handle,33,ref corners,4);
    };
    plate.Show();main.Owner=plate;
-   main.LocationChanged+=SyncEvent;main.SizeChanged+=SyncSize;main.StateChanged+=SyncEvent;main.Activated+=SyncEvent;
+   main.LocationChanged+=SyncEvent;main.SizeChanged+=SyncSize;panel.SizeChanged+=SyncSize;main.StateChanged+=SyncEvent;main.Activated+=SyncEvent;
    Sync();
   }
   void SyncEvent(object sender,EventArgs e){Sync();}
@@ -47,6 +47,6 @@ namespace GanSo {
    int w=(int)Math.Ceiling(panel.ActualWidth*scale.M11),h=(int)Math.Ceiling(panel.ActualHeight*scale.M22);
    if(w!=lastWidth||h!=lastHeight){IntPtr region=CreateRoundRectRgn(0,0,w+1,h+1,(int)Math.Round(60*scale.M11),(int)Math.Round(60*scale.M22));if(SetWindowRgn(handle,region,true)==0)DeleteObject(region);lastWidth=w;lastHeight=h;}
   }
-  public void Dispose(){if(disposed)return;disposed=true;main.LocationChanged-=SyncEvent;main.SizeChanged-=SyncSize;main.StateChanged-=SyncEvent;main.Activated-=SyncEvent;plate.Close();}
+  public void Dispose(){if(disposed)return;disposed=true;main.LocationChanged-=SyncEvent;main.SizeChanged-=SyncSize;panel.SizeChanged-=SyncSize;main.StateChanged-=SyncEvent;main.Activated-=SyncEvent;plate.Close();}
  }
 }

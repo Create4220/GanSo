@@ -13,6 +13,7 @@
 /assets/images/
 /tests/results.txt
 /tests/ui-results.txt
+/tests/audio-smoke.txt
 /tools/deps/
 __pycache__/
 *.pyc
